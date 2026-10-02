@@ -1,0 +1,3 @@
+Name: viraj Patel
+Salary: 55000.0
+Remaining leave: 12
