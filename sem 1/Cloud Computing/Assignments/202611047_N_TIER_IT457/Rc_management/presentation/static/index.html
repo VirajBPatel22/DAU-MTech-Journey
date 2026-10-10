@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-800">
+
+    <!-- Top Navigation -->
+    <nav class="bg-indigo-600 shadow-md">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center">
+            <i class="fas fa-book-open text-white text-2xl mr-3"></i>
+            <h1 class="text-white text-xl font-bold tracking-wide">Library Management System</h1>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        
+        <!-- Error / Success Alert -->
+        <div id="alert-box" class="hidden mb-6 p-4 rounded-md text-sm font-semibold shadow-sm transition-all duration-300"></div>
+
+        <!-- Add / Edit Form Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-10">
+            <div class="bg-slate-100/50 px-6 py-4 border-b border-slate-200">
+                <h2 id="form-title" class="text-lg font-semibold text-slate-700 flex items-center">
+                    <i class="fas fa-plus-circle text-indigo-500 mr-2"></i> Add New Book
+                </h2>
+            </div>
+            <div class="p-6">
+                <form id="bookForm" onsubmit="submitBook(event)" class="space-y-6">
+                    <input type="hidden" id="bookId">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Title</label>
+                            <input type="text" id="title" required placeholder="e.g., The Great Gatsby" 
+                                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Author</label>
+                            <input type="text" id="author" required placeholder="e.g., F. Scott Fitzgerald"
+                                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">ISBN <span class="text-xs text-slate-400 font-normal">(10 or 13 digits)</span></label>
+                            <input type="text" id="isbn" required placeholder="e.g., 9780743273565"
+                                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Year</label>
+                                <input type="number" id="year" required placeholder="2023"
+                                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Quantity</label>
+                                <input type="number" id="quantity" required min="0" placeholder="0"
+                                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3 pt-2">
+                        <button type="submit" id="submitBtn" 
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded-lg shadow-sm transition-colors duration-200">
+                            Post Book
+                        </button>
+                        <button type="button" onclick="resetForm()" 
+                            class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 px-6 rounded-lg transition-colors duration-200">
+                            Clear
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Inventory Section -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <!-- Search Bar -->
+            <div class="bg-slate-100/50 p-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h2 class="text-lg font-semibold text-slate-700 flex items-center">
+                    <i class="fas fa-list text-indigo-500 mr-2"></i> Book Inventory
+                </h2>
+                
+                <div class="flex flex-wrap gap-2">
+                    <div class="flex">
+                        <input type="text" id="searchTitle" placeholder="Search title..." 
+                            class="px-3 py-1.5 border border-slate-300 rounded-l-md focus:outline-none focus:border-indigo-500 text-sm">
+                        <button onclick="searchByTitle()" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-1.5 rounded-r-md text-sm transition-colors">
+                            Search
+                        </button>
+                    </div>
+                    <div class="flex">
+                        <input type="text" id="searchAuthor" placeholder="Search author..." 
+                            class="px-3 py-1.5 border border-slate-300 rounded-l-md focus:outline-none focus:border-indigo-500 text-sm">
+                        <button onclick="searchByAuthor()" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-1.5 rounded-r-md text-sm transition-colors">
+                            Search
+                        </button>
+                    </div>
+                    <button onclick="loadBooks()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-4 py-1.5 rounded-md text-sm font-medium transition-colors border border-indigo-200 ml-2">
+                        Show All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider">
+                            <th class="p-4 font-semibold">Title</th>
+                            <th class="p-4 font-semibold">Author</th>
+                            <th class="p-4 font-semibold">ISBN</th>
+                            <th class="p-4 font-semibold">Year</th>
+                            <th class="p-4 font-semibold">Stock</th>
+                            <th class="p-4 font-semibold text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookTableBody" class="text-sm divide-y divide-slate-100">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = ''; // Uses current host relative URL
+
+        window.onload = loadBooks;
+
+        function showAlert(msg, isError = false) {
+            const alertBox = document.getElementById('alert-box');
+            alertBox.textContent = msg;
+            alertBox.className = `mb-6 p-4 rounded-md text-sm font-semibold shadow-sm transition-all duration-300 block ${
+                isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            }`;
+            setTimeout(() => {
+                alertBox.classList.add('hidden');
+                alertBox.classList.remove('block');
+            }, 4000);
+        }
+
+        async function loadBooks() {
+            try {
+                const res = await fetch(`${API_URL}/books`);
+                const books = await res.json();
+                renderTable(books);
+            } catch(e) {
+                showAlert('Failed to connect to server', true);
+            }
+        }
+
+        async function searchByTitle() {
+            const title = document.getElementById('searchTitle').value;
+            const res = await fetch(`${API_URL}/books?title=${encodeURIComponent(title)}`);
+            const books = await res.json();
+            renderTable(books);
+        }
+
+        async function searchByAuthor() {
+            const author = document.getElementById('searchAuthor').value;
+            const res = await fetch(`${API_URL}/books?author=${encodeURIComponent(author)}`);
+            const books = await res.json();
+            renderTable(books);
+        }
+
+        function renderTable(books) {
+            const tbody = document.getElementById('bookTableBody');
+            tbody.innerHTML = '';
+            
+            if(books.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-500 italic">No books found in the inventory.</td></tr>';
+                return;
+            }
+
+            books.forEach(book => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/70 transition-colors duration-150 group';
+                
+                // badge color for quantity
+                const qtyBadge = book.quantity > 0 
+                    ? `<span class="bg-emerald-100 text-emerald-800 py-1 px-3 rounded-full text-xs font-semibold">${book.quantity}</span>`
+                    : `<span class="bg-red-100 text-red-800 py-1 px-3 rounded-full text-xs font-semibold">0</span>`;
+
+                tr.innerHTML = `
+                    <td class="p-4 font-medium text-slate-800">${book.title}</td>
+                    <td class="p-4 text-slate-600">${book.author}</td>
+                    <td class="p-4 text-slate-500 font-mono text-xs">${book.isbn}</td>
+                    <td class="p-4 text-slate-600">${book.publication_year}</td>
+                    <td class="p-4">${qtyBadge}</td>
+                    <td class="p-4 text-right space-x-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                        <button class="text-amber-500 hover:text-amber-600 bg-amber-50 hover:bg-amber-100 p-2 rounded-md transition-colors" 
+                            onclick="editBook(${book.id}, '${book.title.replace(/'/g, "\\'")}', '${book.author.replace(/'/g, "\\'")}', '${book.isbn}', ${book.publication_year}, ${book.quantity})" title="Edit Book">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 p-2 rounded-md transition-colors" 
+                            onclick="deleteBook(${book.id})" title="Delete Book">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function submitBook(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('bookId').value;
+            const bookData = {
+                title: document.getElementById('title').value,
+                author: document.getElementById('author').value,
+                isbn: document.getElementById('isbn').value,
+                publication_year: parseInt(document.getElementById('year').value),
+                quantity: parseInt(document.getElementById('quantity').value)
+            };
+
+            let method = 'POST';
+            let url = `${API_URL}/books`;
+
+            if (id) {
+                method = 'PUT';
+                url = `${API_URL}/books/${id}`;
+            }
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookData)
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    showAlert(errorData.detail || 'Validation Error', true);
+                    return;
+                }
+
+                showAlert(`Book successfully ${id ? 'updated' : 'added'}!`);
+                resetForm();
+                loadBooks();
+            } catch (error) {
+                showAlert('Network error. Failed to save book.', true);
+            }
+        }
+
+        function editBook(id, title, author, isbn, year, quantity) {
+            document.getElementById('bookId').value = id;
+            document.getElementById('title').value = title;
+            document.getElementById('author').value = author;
+            document.getElementById('isbn').value = isbn;
+            document.getElementById('year').value = year;
+            document.getElementById('quantity').value = quantity;
+            
+            document.getElementById('submitBtn').innerText = 'Update Book';
+            document.getElementById('form-title').innerHTML = '<i class="fas fa-edit text-amber-500 mr-2"></i> Edit Book';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            document.getElementById('bookForm').reset();
+            document.getElementById('bookId').value = '';
+            document.getElementById('submitBtn').innerText = 'Post Book';
+            document.getElementById('form-title').innerHTML = '<i class="fas fa-plus-circle text-indigo-500 mr-2"></i> Add New Book';
+        }
+
+        async function deleteBook(id) {
+            if (!confirm('Are you sure you want to delete this book from the inventory?')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/books/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showAlert('Book deleted successfully');
+                    loadBooks();
+                } else {
+                    showAlert('Failed to delete book.', true);
+                }
+            } catch (error) {
+                showAlert('Network error.', true);
+            }
+        }
+    </script>
+</body>
+</html>
